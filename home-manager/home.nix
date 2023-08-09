@@ -134,11 +134,6 @@
     nitrogen.enable = true;
     hyprland.enable = true;
   };
-  programs.git = {
-    enable = true;
-    userName = "Mr-TM-YT";
-    userEmail = "www.mohamedsalwa13@gmail.com"
-  };
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
 

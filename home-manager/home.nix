@@ -1,78 +1,3 @@
-#{ config, pkgs, ... }:
-
-#{
-  # Home Manager needs a bit of information about you and the paths it should
-  # manage.
-#  home.username = "mohamed";
-#  home.homeDirectory = "/home/mohamed";
-  # This value determines the Home Manager release that your configuration is
-  # compatible with. This helps avoid breakage when a new Home Manager release
-  # introduces backwards incompatible changes.
-  #
-  # You should not change this value, even if you update Home Manager. If you do
-  # want to update the value, then make sure to first check the Home Manager
-  # release notes.
-#  home.stateVersion = "22.11"; # Please read the comment before changing.
-
-  # The home.packages option allows you to install Nix packages into your
-  # environment.
-#  home.packages = [
-    # # Adds the 'hello' command to your environment. It prints a friendly
-    # # "Hello, world!" when run.
-    # pkgs.hello
-#    pkgs.discord
-    # # It is sometimes useful to fine-tune packages, for example, by applying
-    # # overrides. You can do that directly here, just don't forget the
-    # # parentheses. Maybe you want to install Nerd Fonts with a limited number of
-    # # fonts?
-    # (pkgs.nerdfonts.override { fonts = [ "FantasqueSansMono" ]; })
-
-    # # You can also create simple shell scripts directly inside your
-    # # configuration. For example, this adds a command 'my-hello' to your
-    # # environment:
-    # (pkgs.writeShellScriptBin "my-hello" ''
-    #   echo "Hello, ${config.home.username}!"
-    # '')
-#  ];
-
-
-  # Home Manager is pretty good at managing dotfiles. The primary way to manage
-  # plain files is through 'home.file'.
-#  home.file = {
-    # # Building this configuration will create a copy of 'dotfiles/screenrc' in
-    # # the Nix store. Activating the configuration will then make '~/.screenrc' a
-    # # symlink to the Nix store copy.
-    # ".screenrc".source = dotfiles/screenrc;
-
-    # # You can also set the file content immediately.
-    # ".gradle/gradle.properties".text = ''
-    #   org.gradle.console=verbose
-    #   org.gradle.daemon.idletimeout=3600000
-    # '';
-#  };
-
-  # You can also manage environment variables but you will have to manually
-  # source
-  #
-  #  ~/.nix-profile/etc/profile.d/hm-session-vars.sh
-  #
-  # or
-  #
-  #  /etc/profiles/per-user/mohamed/etc/profile.d/hm-session-vars.sh
-  #
-  # if you don't want to manage your shell through Home Manager.
-#  home.sessionVariables = {
-    # EDITOR = "emacs";
- # };
-#  programs = {
-#    home-manager.enable = true;
-#    discord.enable = true;
-#  }
-  # Let Home Manager install and manage itself.
-#}
-
-
-
 # This is your home-manager configuration file
 # Use this to configure your home environment (it replaces ~/.config/nixpkgs/home.nix)
 
@@ -80,7 +5,7 @@
   # You can import other home-manager modules here
   imports = [
     # If you want to use home-manager modules from other flakes (such as nix-colors):
-    # inputs.nix-colors.homeManagerModule
+    inputs.nix-colors.homeManagerModule
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
@@ -116,25 +41,121 @@
 
   # Add stuff for your user as you see fit:
   # programs.neovim.enable = true;
-  home.packages = with pkgs; [
-   discord firefox maim xclip kitty xdotool pcmanfm helix nitrogen
-   exa
-  ];
+  home.packages = with pkgs; [];
 
-  # Enable home-manager and git
+  gtk = {
+    enable = true;
+    cursorTheme = {
+      name = "macOS-Monterey";
+      package = pkgs.apple-cursor;
+    };
+    iconTheme = {
+      name = "Papirus";
+      package = pkgs.papirus-icon-theme;
+    };
+    theme = {
+      name = "Orchis-Purple-Dark";
+      package = pkgs.orchis-theme;
+    };
+    gtk3.extraConfig = {
+      gtk-application-prefer-dark-theme=1;
+      gtk-xft-antialias = 1;
+      gtk-xft-hinting = 1;
+      gtk-xft-hintstyle = "hintfull";
+      gtk-xft-rgba = "rgb";
+    };
+  };
+
+
+  home.shellAliases = {
+    ls = "exa -lag --color=always --group-directories-first --icons --color-scale";
+    grep = "grep --color=always";
+    cd = "z";
+    cat = "bat";
+    sduo = "sudo";
+    suod = "sudo";
+    home-switch = "home-manager switch --flake ~/.config/nixos/#mohamed@mohamed-pc";
+    root-switch = "sudo nixos-rebuild switch --flake ~/.config/nixos/#mohamed-pc";
+  };
+
+# Enable home-manager and git
   programs = {
     home-manager.enable = true;
-    discord.enable = true;
-    firefox.enable = true;
-    kitty.enable = true;
-    main.enable = true;
-    xclip.enable = true;
-    xdotool.enable = true;
-    pcmanfm.enable = true;
-    helix.enable = true;
-    nitrogen.enable = true;
-    hyprland.enable = true;
-  };
+    waybar.enable = true;
+    zsh = {
+      enable = true;
+      autocd = true;
+      enableAutosuggestions = true;
+      history = {
+        path = ".cache/zsh/history";
+        save = 20000;
+        size = 20000;
+      };
+      completionInit = ''
+        autoload -Uz compinit
+        compinit
+        '';
+      historySubstringSearch = {
+        enable = true;
+        searchDownKey = [ "^[[A" "^P" ];
+        searchUpKey = [ "^[[B" "^N" ];
+      };
+      envExtra = '' 
+        export STARSHIP_CONFIG=$HOME/.config/starship/starship.toml
+        export PATH=$HOME/.local/bin:$HOME/.bin:$PATH
+        '';
+      initExtraBeforeCompInit = ''
+        zstyle ':completion:*' completer _menu _expand _complete _correct _approximate
+        zstyle ':completion:*' completions 0
+        zstyle ':completion:*' glob 0
+        zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}'
+        zstyle ':completion:*' max-errors 10
+        zstyle ':completion:*' special-dirs true
+        zstyle ':completion:*' substitute 1
+        zstyle :compinstall filename '/home/hisham/.config/zsh/.zshrc'
+        '';
+    };
+    kitty = {
+      enable = true;
+      font = {
+        name = "JetBrainsMono";
+        size = 14;
+      };
+      theme = "Material Dark";
+      settings = {
+        background_opacity = "0.9";
+      };
+    };
+
+    zoxide = {
+      enable = true;
+    };
+    starship = {
+      enable = true;
+    };
+    tint2.enable = true;
+    mpv = {
+      enable = true;
+      config = {
+        "osd-font" = "UbuntuMono Nerd Font";
+        "osd-font-size" = "14";
+        "osd-bar-align-y" = "0.95";
+        "osd-on-seek" = "msg-bar";
+   			"osd-bold" = "no";
+   			"osd-border-size" = "0";
+   			"osd-back-color" = "#4f1b1d1e";
+   			"osd-color" = "#ffffff";
+   			"osd-duration" = "3000";
+   			"osd-level" = "3";
+ 		};
+	bindings = {
+		"j" = "seek 5";
+		"h" = "seek -5";
+		"Ctrl+j" = "seek 30";
+		"Ctrl+h" = "seek -30";
+	};
+};
+};
   # Nicely reload system units when changing configs
   systemd.user.startServices = "sd-switch";
 
